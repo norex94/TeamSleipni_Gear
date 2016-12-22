@@ -1,26 +1,27 @@
 
-//  Ingangar#####################
+//  Ingangar  #####################
 const int GUPin = 2;
 const int GDPin = 3;
 const int NULLPin = 4;
 const int WentInGear = 5;
 const int WentBack = 6;
-//  �tgangar#####################
+//  �tgangar  #####################
 const int GUOut = 7;
 const int GDOut = 8;
 
-// Breytur#####################
+// Breytur  #####################
 
 int whatGear = 0;
 bool isChangingGear;
 
-//Föll#####################
+//Föll  #####################
 void shift_fail();
 void shift_complete();
+void shift_up();
+void shift_down();
 
 
 
-//#################  SETUP  #####################
 void setup() {
   pinMode(GUPin, INPUT);
   pinMode(GDPin, INPUT);
@@ -35,33 +36,26 @@ void setup() {
   Serial.begin(9600);
 }
 
-//#####################THE LOOP#####################
 void loop() {
 
 
 
   //Change Gear upp #####################
   if (digitalRead(GUPin) == HIGH && !isChangingGear) {
-
-    digitalWrite(GUOut, HIGH);
-    isChangingGear = true;
-    Serial.print("Skipti upp");
-
+    void shift_up();
   }
+  
   //Change gear down #####################
   if (digitalRead(GUPin) == HIGH && !isChangingGear) {
-
-    digitalWrite(GDOut, HIGH);
-    isChangingGear = true;
-    Serial.print("Skipti ni�ur");
-
+    void shift_down(); 
   }
+  
   //Gear change sucessfull #####################
   if (isChangingGear && digitalRead(WentInGear) == HIGH) {
     shift_complete();
   }
 
-
+/*
   Serial.print("Current gear: ");
   Serial.print(whatGear);
   Serial.println();
@@ -69,10 +63,9 @@ void loop() {
   Serial.print(GUPin);
   Serial.println();
 
-
+*/
 
 }
-//######################################## FÖLL #################################################
 //Skipting mistókst
 void shift_fail()
 {
@@ -100,6 +93,28 @@ void shift_complete()
   Serial.print(whatGear);
 
   return;
+};
+//Skipta upp
+void shift_up()
+{
+  digitalWrite(GUOut, HIGH);
+  isChangingGear = true;
+  //Prenta
+  Serial.print("Skipti upp");
+  
+  //$$$$$$$$$$$$$$Vantar timer fall hér!$$$$$$$$$$$$$$$$$$  
+  
+};
+//Skipta niður
+void shift_down()
+{
+  digitalWrite(GDOut, HIGH);
+  isChangingGear = true;
+  //Prenta
+  Serial.print("Skipti nidur");
+  
+  //$$$$$$$$$$$$$$Vantar timer fall hér!$$$$$$$$$$$$$$$$$$  
+  
 };
 
 
