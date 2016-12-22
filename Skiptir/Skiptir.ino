@@ -16,6 +16,8 @@ bool isChangingGear;
 
 //Föll#####################
 void shift_fail();
+void shift_complete();
+
 
 
 //#################  SETUP  #####################
@@ -56,14 +58,7 @@ void loop() {
   }
   //Gear change sucessfull #####################
   if (isChangingGear && digitalRead(WentInGear) == HIGH) {
-
-    if (GDOut == HIGH) { whatGear--; };
-    if (GUOut == HIGH) { whatGear++; };
-
-    digitalWrite(GDOut, LOW);
-    digitalWrite(GUOut, LOW);
-    isChangingGear = false;
-
+    shift_complete();
   }
 
 
@@ -82,8 +77,29 @@ void loop() {
 void shift_fail()
 {
   isChangingGear = false;
+  //Endursetja
   digitalWrite(GUOut,LOW);
   digitalWrite(GDOut,LOW);
+  //Prenta
   Serial.println("### Gear failed to shift! ###");
   return;
 };
+
+//Skipting tókst
+void shift_complete()
+{ 
+  isChangingGear = false;  
+  //Hækka um gýr númer
+  if (GDOut == HIGH) { whatGear--; };
+  if (GUOut == HIGH) { whatGear++; };
+  //Endursetja
+  digitalWrite(GDOut, LOW);
+  digitalWrite(GUOut, LOW);
+  //Prenta
+  Serial.print("Current gear: ");
+  Serial.print(whatGear);
+
+  return;
+};
+
+
