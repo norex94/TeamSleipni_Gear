@@ -35,6 +35,7 @@ void setup() {
 
   // initialize serial communications:
   Serial.begin(9600);
+  Serial.print("################     TeamSleipnir_Shifter_V1     ###################");
 }
 
 //####################   THE LOOP   ############################
@@ -90,8 +91,8 @@ void loop() {
 //Skipting mistókst
 void shift_fail()
 {
-  isChangingGear = false;
   //Endursetja
+  isChangingGear = false;
   digitalWrite(GUOut,LOW);
   digitalWrite(GDOut,LOW);
   //Prenta
@@ -102,15 +103,16 @@ void shift_fail()
 //Skipting tókst
 void shift_complete()
 { 
-  isChangingGear = false;  
+   
   //Hækka um gýr númer
   if (GDOut == HIGH) { whatGear--; };
   if (GUOut == HIGH) { whatGear++; };
   //Endursetja
+  isChangingGear = false; 
   digitalWrite(GDOut, LOW);
   digitalWrite(GUOut, LOW);
   //Prenta
-  Serial.print("Current gear: ");
+  Serial.print("INFO: Current gear: ");
   Serial.print(whatGear);
 
   return;
@@ -121,7 +123,7 @@ void shift_up()
   digitalWrite(GUOut, HIGH);
   isChangingGear = true;
   //Prenta
-  Serial.print("Skipti upp");
+  Serial.print("INFO: Skipti upp");
   
   //$$$$$$$$$$$$$$Vantar timer fall hér!$$$$$$$$$$$$$$$$$$  
   
@@ -132,7 +134,7 @@ void shift_down()
   digitalWrite(GDOut, HIGH);
   isChangingGear = true;
   //Prenta
-  Serial.print("Skipti nidur");
+  Serial.print("INFO: Skipti nidur");
   
   //$$$$$$$$$$$$$$Vantar timer fall hér!$$$$$$$$$$$$$$$$$$  
   
