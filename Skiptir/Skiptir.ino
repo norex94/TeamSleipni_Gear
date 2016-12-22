@@ -22,6 +22,7 @@ void shift_down();
 
 
 
+//####################    SETUP    ############################
 void setup() {
   pinMode(GUPin, INPUT);
   pinMode(GDPin, INPUT);
@@ -36,18 +37,37 @@ void setup() {
   Serial.begin(9600);
 }
 
+//####################   THE LOOP   ############################
 void loop() {
 
 
 
   //Change Gear upp #####################
   if (digitalRead(GUPin) == HIGH && !isChangingGear) {
-    void shift_up();
+    //Er armurinn heima?
+    if(digitalRead(WentBack)== HIGH)
+    {
+      void shift_up();  
+    }
+    else
+    {
+      // Some kind of error
+      Serial.print("### ERROR: Gear not at home! ###");
+    }
   }
   
   //Change gear down #####################
   if (digitalRead(GUPin) == HIGH && !isChangingGear) {
-    void shift_down(); 
+    //Er armurinn heima?
+    if(digitalRead(WentBack)== HIGH)
+    {
+      void shift_down();  
+    }
+    else
+    {
+      // Some kind of error 
+      Serial.print("### ERROR: Gear not at home! ###");
+    }
   }
   
   //Gear change sucessfull #####################
@@ -66,6 +86,7 @@ void loop() {
 */
 
 }
+//##########################     FÖLL     ##############################
 //Skipting mistókst
 void shift_fail()
 {
@@ -74,7 +95,7 @@ void shift_fail()
   digitalWrite(GUOut,LOW);
   digitalWrite(GDOut,LOW);
   //Prenta
-  Serial.println("### Gear failed to shift! ###");
+  Serial.println("### ERROR: Gear failed to shift! ###");
   return;
 };
 
