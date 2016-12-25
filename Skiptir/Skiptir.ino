@@ -3,8 +3,8 @@
 const int GUPin = 2;
 const int GDPin = 3;
 const int NULLPin = 4;
-const int WentInGear = 5;
-const int WentBack = 6;
+const int outputA = 5;
+const int outputB = 6;
 
 //  utgangar  #####################
 const int GUOut = 7;
@@ -24,32 +24,61 @@ void shift_up();
 void shift_down();
 void reset_Gears();
 
+//Rotary Counter ###############
+ int counter = 0; 
+ int aState;
+ int aLastState;  
+ 
+ const int counterHome = 0;
+ const int counterSafePos = 50;
+ const int counterGearUp = 100;
+ const int counterGearDown = -100;
+
 
 //####################    SETUP    ############################
 void setup() {
   pinMode(GUPin, INPUT);
   pinMode(GDPin, INPUT);
   pinMode(NULLPin, INPUT);
-  pinMode(WentInGear, INPUT);
-  pinMode(WentBack, INPUT);
-
+  
   pinMode(GUOut, OUTPUT);
   pinMode(GDOut, OUTPUT);
 
   // initialize serial communications:
   Serial.begin(9600);
   Serial.print("################     TeamSleipnir_Shifter_V1     ###################");
+
+  //Rotary encoder
+  aLastState = digitalRead(outputA);   
+  pinMode(outputA, INPUT);
+  pinMode(outputB, INPUT);
 }
 
 //####################   THE LOOP   ############################
 void loop() {
-
-
+  
+  //Rotary encoder #####################
+  aState = digitalRead(outputA); // Reads the "current" state of the outputA
+   // If the previous and the current state of the outputA are different, that means a Pulse has occured
+  if (aState != aLastState){     
+     // If the outputB state is different to the outputA state, that means the encoder is rotating clockwise
+    if (digitalRead(outputB) != aState) { 
+      counter ++;
+    } else {
+      counter --;
+    }
+    
+    //Serial.print("Position: ");
+    //Serial.println(counter);
+  } 
+  aLastState = aState;
+  
 
   //Skipta upp? #####################
   if (digitalRead(GUPin) == HIGH && !isChangingGear) {
-    //Er armurinn heima?
-    if(digitalRead(WentBack)== HIGH)
+    //Er armurinn heima? innan við marka?
+    // counterHome+conterSafePos > counter > counterHome-counterSafePos
+    if(counter < (counterHome+counterSafePos) && counter > (counterHome-counterSafePos))
     {
       void shift_up();  
     }
@@ -62,8 +91,9 @@ void loop() {
   
   //Skipta niður? #####################
   if (digitalRead(GDPin) == HIGH && !isChangingGear) {
-    //Er armurinn heima?
-    if(digitalRead(WentBack)== HIGH)
+    //Er armurinn heima? innan við marka?
+    // counterHome+conterSafePos > counter > counterHome-counterSafePos
+    if(counter < (counterHome+counterSafePos) && counter > (counterHome-counterSafePos))
     {
       void shift_down();  
     }
@@ -80,17 +110,21 @@ void loop() {
   }*/
   //Erum við að skipta?
   if(isChangingGear == true){
-    // <-------------------------------------------Ræsa TIME fall hérna
+    
     
     //Búinn að skipta?
 
     //JÁ!
-    if(digitalRead(WentInGear)==HIGH){
+    if(counter > (counterGearUp)){
       shift_complete();
     }
+    else if(counter < counterGearDown){
+      shift_complete();
+    }
+    
     //Nei!
     else{
-      //Eitthvað sniðugt
+      //Eitthvað sniðugt <-------------------------------------------Ræsa TIME fall hérna
       if(tooLongShift == true){
         shift_fail();
       }
@@ -98,7 +132,7 @@ void loop() {
   }
 
   if(digitalRead(GUPin) == HIGH && digitalRead(GDPin) == HIGH){
-  reset_Gears();
+    reset_Gears();
   }
 
 
@@ -162,8 +196,9 @@ void reset_Gears(){
   digitalWrite(GUOut, LOW);
   isChangingGear = false;
   tooLongShift = false;
+  counter = 0;
   whatGear = 0; // <-------------------------- Spurning með þetta
-  Serial.println("INFO: RESTARTED");
+  Serial.println("INFO: SYSTEM RESTARTED");
 };
 
 
