@@ -5,21 +5,24 @@ const int GDPin = 3;
 const int NULLPin = 4;
 const int WentInGear = 5;
 const int WentBack = 6;
-//  �tgangar  #####################
+
+//  utgangar  #####################
 const int GUOut = 7;
 const int GDOut = 8;
 
 // Breytur  #####################
 
-int whatGear = 0;
-bool isChangingGear;
+int whatGear = 0; // Byrjar í Nautral
+bool isChangingGear = false;
+bool tooLongShift = false;
+const int maxShiftTime = 500; // millisekúndur
 
 //Föll  #####################
 void shift_fail();
 void shift_complete();
 void shift_up();
 void shift_down();
-
+void reset_Gears();
 
 
 //####################    SETUP    ############################
@@ -43,7 +46,7 @@ void loop() {
 
 
 
-  //Change Gear upp #####################
+  //Skipta upp? #####################
   if (digitalRead(GUPin) == HIGH && !isChangingGear) {
     //Er armurinn heima?
     if(digitalRead(WentBack)== HIGH)
@@ -57,8 +60,8 @@ void loop() {
     }
   }
   
-  //Change gear down #####################
-  if (digitalRead(GUPin) == HIGH && !isChangingGear) {
+  //Skipta niður? #####################
+  if (digitalRead(GDPin) == HIGH && !isChangingGear) {
     //Er armurinn heima?
     if(digitalRead(WentBack)== HIGH)
     {
@@ -71,20 +74,33 @@ void loop() {
     }
   }
   
-  //Gear change sucessfull #####################
-  if (isChangingGear && digitalRead(WentInGear) == HIGH) {
+  /*Gear change sucessfull #####################
+    if (isChangingGear && digitalRead(WentInGear) == HIGH) {
     shift_complete();
+  }*/
+  //Erum við að skipta?
+  if(isChangingGear == true){
+    // <-------------------------------------------Ræsa TIME fall hérna
+    
+    //Búinn að skipta?
+
+    //JÁ!
+    if(digitalRead(WentInGear)==HIGH){
+      shift_complete();
+    }
+    //Nei!
+    else{
+      //Eitthvað sniðugt
+      if(tooLongShift == true){
+        shift_fail();
+      }
+    }
   }
 
-/*
-  Serial.print("Current gear: ");
-  Serial.print(whatGear);
-  Serial.println();
-  Serial.print("GearUp: ");
-  Serial.print(GUPin);
-  Serial.println();
+  if(digitalRead(GUPin) == HIGH && digitalRead(GDPin) == HIGH){
+  reset_Gears();
+  }
 
-*/
 
 }
 //##########################     FÖLL     ##############################
@@ -97,7 +113,7 @@ void shift_fail()
   digitalWrite(GDOut,LOW);
   //Prenta
   Serial.println("### ERROR: Gear failed to shift! ###");
-  return;
+  //<-------------------------------------------resetja TIME fall hérna
 };
 
 //Skipting tókst
@@ -113,31 +129,41 @@ void shift_complete()
   digitalWrite(GUOut, LOW);
   //Prenta
   Serial.print("INFO: Current gear: ");
-  Serial.print(whatGear);
-
+  Serial.println(whatGear);
+   //           <-------------------------------------------resetja TIME fall hérna
   return;
 };
+
 //Skipta upp
 void shift_up()
 {
   digitalWrite(GUOut, HIGH);
   isChangingGear = true;
   //Prenta
-  Serial.print("INFO: Skipti upp");
+  Serial.println("INFO: Skipti upp");
   
-  //$$$$$$$$$$$$$$Vantar timer fall hér!$$$$$$$$$$$$$$$$$$  
-  
+    
 };
+
 //Skipta niður
 void shift_down()
 {
   digitalWrite(GDOut, HIGH);
   isChangingGear = true;
   //Prenta
-  Serial.print("INFO: Skipti nidur");
+  Serial.println("INFO: Skipti nidur");
+ 
   
-  //$$$$$$$$$$$$$$Vantar timer fall hér!$$$$$$$$$$$$$$$$$$  
-  
+};
+
+//Endursetja allt
+void reset_Gears(){
+  digitalWrite(GDOut, LOW);
+  digitalWrite(GUOut, LOW);
+  isChangingGear = false;
+  tooLongShift = false;
+  whatGear = 0; // <-------------------------- Spurning með þetta
+  Serial.println("INFO: RESTARTED");
 };
 
 
