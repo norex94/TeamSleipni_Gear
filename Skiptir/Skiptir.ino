@@ -5,14 +5,17 @@ const int GDPin = 3;
 const int NULLPin = 4;
 const int WentInGear = 5;
 const int WentBack = 6;
-//  �tgangar  #####################
+
+//  utgangar  #####################
 const int GUOut = 7;
 const int GDOut = 8;
 
 // Breytur  #####################
 
-int whatGear = 0;
+int whatGear = 0; // Byrjar í Nautral
 bool isChangingGear;
+bool tooLongShift;
+const int maxShiftTime = 500; // millisekúndur
 
 //Föll  #####################
 void shift_fail();
@@ -43,7 +46,7 @@ void loop() {
 
 
 
-  //Change Gear upp #####################
+  //Skipta upp? #####################
   if (digitalRead(GUPin) == HIGH && !isChangingGear) {
     //Er armurinn heima?
     if(digitalRead(WentBack)== HIGH)
@@ -57,7 +60,7 @@ void loop() {
     }
   }
   
-  //Change gear down #####################
+  //Skipta niður? #####################
   if (digitalRead(GUPin) == HIGH && !isChangingGear) {
     //Er armurinn heima?
     if(digitalRead(WentBack)== HIGH)
@@ -71,9 +74,27 @@ void loop() {
     }
   }
   
-  //Gear change sucessfull #####################
-  if (isChangingGear && digitalRead(WentInGear) == HIGH) {
+  /*Gear change sucessfull #####################
+    if (isChangingGear && digitalRead(WentInGear) == HIGH) {
     shift_complete();
+  }*/
+  //Erum við að skipta?
+  if(isChangingGear == true){
+    // <-------------------------------------------Ræsa TIME fall hérna
+    
+    //Búinn að skipta?
+
+    //JÁ!
+    if(digitalRead(WentInGear)==HIGH){
+      shift_complete();
+    }
+    //Nei!
+    else{
+      //Eitthvað sniðugt
+      if(tooLongShift == true){
+        shift_fail();
+      }
+    }
   }
 
 /*
@@ -97,7 +118,7 @@ void shift_fail()
   digitalWrite(GDOut,LOW);
   //Prenta
   Serial.println("### ERROR: Gear failed to shift! ###");
-  return;
+  //<-------------------------------------------resetja TIME fall hérna
 };
 
 //Skipting tókst
@@ -114,9 +135,10 @@ void shift_complete()
   //Prenta
   Serial.print("INFO: Current gear: ");
   Serial.print(whatGear);
-
+   //           <-------------------------------------------resetja TIME fall hérna
   return;
 };
+
 //Skipta upp
 void shift_up()
 {
@@ -128,6 +150,7 @@ void shift_up()
   //$$$$$$$$$$$$$$Vantar timer fall hér!$$$$$$$$$$$$$$$$$$  
   
 };
+
 //Skipta niður
 void shift_down()
 {
