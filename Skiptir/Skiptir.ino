@@ -15,6 +15,9 @@ const int GDOut = 8;
 int whatGear = 0; // Byrjar í Nautral
 bool isChangingGear = false;
 bool tooLongShift = false;
+bool goHome = false;
+int const goHomeMaxTime = 1000; //millisekúndur
+
 const int maxShiftTime = 500; // millisekúndur
 
 //Föll  #####################
@@ -23,6 +26,7 @@ void shift_complete();
 void shift_up();
 void shift_down();
 void reset_Gears();
+void go_Home();
 
 //Rotary Counter ###############
  int counter = 0; 
@@ -84,8 +88,8 @@ void loop() {
     }
     else
     {
-      // Some kind of error
-      Serial.print("### ERROR: Gear not at home! ###");
+      Serial.println("### ERROR: Gear not at home! ###");
+      go_Home();
     }
   }
   
@@ -100,7 +104,8 @@ void loop() {
     else
     {
       // Some kind of error 
-      Serial.print("### ERROR: Gear not at home! ###");
+      Serial.println("### ERROR: Gear not at home! ###");
+      go_Home();
     }
   }
   
@@ -134,7 +139,9 @@ void loop() {
   if(digitalRead(GUPin) == HIGH && digitalRead(GDPin) == HIGH){
     reset_Gears();
   }
-
+  //Reynir að fara aftur í heima punkt
+  if(goHome){go_Home();}
+  
 
 }
 //##########################     FÖLL     ##############################
@@ -192,13 +199,41 @@ void shift_down()
 
 //Endursetja allt
 void reset_Gears(){
-  digitalWrite(GDOut, LOW);
-  digitalWrite(GUOut, LOW);
   isChangingGear = false;
   tooLongShift = false;
-  counter = 0;
+  
+  //Ef stönginn er ekki heima
+  if(counter < (counterHome+counterSafePos) && counter > (counterHome-counterSafePos)){
+    Serial.println("### ERROR: Gear not home! ###");
+    go_Home();
+  }
+  else{
+    digitalWrite(GDOut, LOW);
+    digitalWrite(GUOut, LOW);
+  }
+ 
   whatGear = 0; // <-------------------------- Spurning með þetta
   Serial.println("INFO: SYSTEM RESTARTED");
 };
-
+//Reynir að fara sjálfur aftur í heimastöðu ef hann festist
+void go_Home(){//<------------------------- Vantar hérna að ef hann er of lengi að reyna þá endursetur það sig goHome = false
+  goHome = true;
+  if(counter > (counterHome+counterSafePos)){
+    Serial.println("INFO: Trying to move down...");
+    digitalWrite(GUOut, LOW);
+    digitalWrite(GDOut, HIGH);
+  }
+  else if(counter < (counterHome-counterSafePos)){
+    Serial.println("INFO: Trying to move up...");
+    digitalWrite(GDOut, LOW);
+    digitalWrite(GUOut, HIGH);
+  }
+  if(counter < (counterHome+counterSafePos) && counter > (counterHome-counterSafePos)){
+    digitalWrite(GDOut, LOW);
+    digitalWrite(GUOut, LOW);
+    Serial.println("INFO: GEAR IS HOME!");
+    goHome = false;
+  }
+  
+};
 
